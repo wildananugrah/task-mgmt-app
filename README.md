@@ -38,4 +38,6 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 ###
 
-npx prisma migrate dev --name init
+npx prisma format
+npx prisma generate
+npx prisma migrate dev --name [what-is-the-changes]
