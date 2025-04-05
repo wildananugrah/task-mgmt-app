@@ -9,6 +9,7 @@ import ModalComponent from "@/components/ModalComponent";
 import TestNotificationComponent from "./TestNotificationButtons";
 import SlidedInDrawerComponent from "@/components/SlidedInDrawerComponent";
 import TestSlideInDrawerButtons from "./TestSlideInDrawerButtons";
+import { signOut } from "next-auth/react";
 
 export default function ClientDashboard(props: { session: Session }) {
   const [showModal, setShowModal] = useState(false);
@@ -16,28 +17,43 @@ export default function ClientDashboard(props: { session: Session }) {
   const [openSubRight, setOpenSubRight] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-white flex">
+    <div className="h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-white flex">
       {/* Sidebar */}
-      <aside className="w-64 bg-white dark:bg-gray-800 p-6 rounded-r-2xl shadow-md hidden md:block">
-        <div className="mb-10">
-          <div className="flex items-center gap-3">
-            <Image
-              src="https://i.pravatar.cc/40"
-              alt="Profile"
-              width={40}
-              height={40}
-              className="rounded-full"
-            />
-            <span className="font-semibold text-lg">Stereo AI</span>
+      <aside className="flex flex-col justify-between h-full w-64 bg-white dark:bg-gray-800 p-6 rounded-r-2xl shadow-md hidden md:flex">
+        {/* TOP PART */}
+        <div>
+          <div className="mb-10">
+            <div className="flex items-center gap-3">
+              <Image
+                src="https://i.pravatar.cc/40"
+                alt="Profile"
+                width={40}
+                height={40}
+                className="rounded-full"
+              />
+              <span className="font-semibold text-lg">Stereo AI</span>
+            </div>
           </div>
+
+          <nav className="space-y-4">
+            <NavItem icon="💻" label="Inbox" active />
+            <NavItem icon="✅" label="My issues" />
+            <NavItem icon="📚" label="Views" />
+            <NavItem icon="🗺️" label="Roadmaps" />
+            <NavItem icon="⭐" label="Favorites" />
+          </nav>
         </div>
-        <nav className="space-y-4">
-          <NavItem icon="💻" label="Inbox" active />
-          <NavItem icon="✅" label="My issues" />
-          <NavItem icon="📚" label="Views" />
-          <NavItem icon="🗺️" label="Roadmaps" />
-          <NavItem icon="⭐" label="Favorites" />
-        </nav>
+
+        {/* BOTTOM PART (Logout) */}
+        <div>
+          <button
+            onClick={() => signOut({ callbackUrl: "/" })}
+            className="flex items-center gap-3 px-3 py-2 cursor-pointer rounded-lg text-red-600 hover:bg-red-100 dark:hover:bg-red-900 transition w-full"
+          >
+            <span>🚪</span>
+            <span>Logout</span>
+          </button>
+        </div>
       </aside>
 
       {/* Main Content */}
