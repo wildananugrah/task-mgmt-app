@@ -1,0 +1,150 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum TaskRelationType {
+  DEPENDS_ON
+  DUPLICATE_OF
+  RELATED
+  BLOCKED_BY
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  createdAt DateTime @default(now())
+
+  // Relations
+  authorId String
+  taskId   String
+
+  author User @relation(fields: [authorId], references: [id])
+  task   Task @relation(fields: [taskId], references: [id])
+
+  @@index([authorId])
+  @@index([taskId])
+}
+
+model Label {
+  id   String @id @default(cuid())
+  name String @unique
+
+  tasks Task[] // Implicit many-to-many
+}
+
+model TaskRelation {
+  id         String @id @default(cuid())
+  fromTask   Task   @relation("FromTask", fields: [fromTaskId], references: [id])
+  fromTaskId String
+
+  toTask   Task   @relation("ToTask", fields: [toTaskId], references: [id])
+  toTaskId String
+
+  type TaskRelationType @default(RELATED)
+
+  createdAt DateTime @default(now())
+
+  @@unique([fromTaskId, toTaskId])
+}
+
+model Task {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  status      String    @default("pending")
+  priority    Priority  @default(MEDIUM)
+  dueDate     DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  creatorId String
+  creator   User   @relation("CreatedTasks", fields: [creatorId], references: [id])
+
+  assigneeId String?
+  assignee   User?   @relation("AssignedTasks", fields: [assigneeId], references: [id])
+
+  relatedFrom TaskRelation[] @relation("FromTask")
+  relatedTo   TaskRelation[] @relation("ToTask")
+
+  labels    Label[] // Implicit many-to-many
+  projectId String?
+  project   Project?  @relation(fields: [projectId], references: [id])
+  comments  Comment[]
+
+  @@index([creatorId])
+  @@index([assigneeId])
+  @@index([projectId])
+}
+
+model Project {
+  id        String   @id @default(cuid())
+  name      String
+  color     String? // e.g., "#ff6600" to give project a visual tag
+  createdAt DateTime @default(now())
+
+  tasks   Task[]
+  ownerId String
+  owner   User   @relation(fields: [ownerId], references: [id])
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+
+  createdTasks  Task[]    @relation("CreatedTasks")
+  assignedTasks Task[]    @relation("AssignedTasks")
+  projects      Project[]
+  comments      Comment[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id])
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}

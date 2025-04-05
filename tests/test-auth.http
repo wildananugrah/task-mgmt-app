@@ -1,0 +1,66 @@
+### Get all tasks (no auth required if your endpoint is public)
+GET http://localhost:3000/api/tasks
+Cookie: next-auth.session-token=eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..LyXMcCLcVPJ5g2eL.SOwK7j8hT-RCXTZ3eytAvblFu-bKPz7K0_80VtP-Zba4-LOeT4TfxYnX4u_UFZ4TGBi38HD6LcUroYVn95CFJrtI6BioCmmKJUCRcDEWjYkRElHPgjj7bZq2PMliSsOdHd1a0G7RpAdfPxvIyKW7dVmMRjAJfj_hFSKhDd08ZD7hrxMvAPKU49rA_PMU5X6IJAF_nwh7zhtYNSVC9sEeuGQWgX0cYTi7xs3TDud2Yfzh9zKBb2w2AGrCqr1nq7EYb6GH4q9RnCLIm9GDnCmTeFURtyk-KKu3ehk_GNOuyM4I6DjRHixFfoQLQeiz0ckDR9npImsIKMLlpadPaCX5yBLsEp9exJMn3ndtryeovqwcQrXmt8bwHzS3fw.kL4SyIKuVNrl-eSF2kmBgw
+Content-Type: application/json
+
+###
+
+### Create a task (auth required)
+POST http://localhost:3000/api/tasks
+Content-Type: application/json
+Cookie: next-auth.session-token=eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..LyXMcCLcVPJ5g2eL.SOwK7j8hT-RCXTZ3eytAvblFu-bKPz7K0_80VtP-Zba4-LOeT4TfxYnX4u_UFZ4TGBi38HD6LcUroYVn95CFJrtI6BioCmmKJUCRcDEWjYkRElHPgjj7bZq2PMliSsOdHd1a0G7RpAdfPxvIyKW7dVmMRjAJfj_hFSKhDd08ZD7hrxMvAPKU49rA_PMU5X6IJAF_nwh7zhtYNSVC9sEeuGQWgX0cYTi7xs3TDud2Yfzh9zKBb2w2AGrCqr1nq7EYb6GH4q9RnCLIm9GDnCmTeFURtyk-KKu3ehk_GNOuyM4I6DjRHixFfoQLQeiz0ckDR9npImsIKMLlpadPaCX5yBLsEp9exJMn3ndtryeovqwcQrXmt8bwHzS3fw.kL4SyIKuVNrl-eSF2kmBgw
+
+{
+  "title": "Build API routes",
+  "description": "Create CRUD API endpoints for tasks",
+  "priority": "MEDIUM"
+}
+
+###
+
+### Create a comment on a task
+POST http://localhost:3000/api/comments
+Content-Type: application/json
+Cookie: next-auth.session-token=eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..LyXMcCLcVPJ5g2eL.SOwK7j8hT-RCXTZ3eytAvblFu-bKPz7K0_80VtP-Zba4-LOeT4TfxYnX4u_UFZ4TGBi38HD6LcUroYVn95CFJrtI6BioCmmKJUCRcDEWjYkRElHPgjj7bZq2PMliSsOdHd1a0G7RpAdfPxvIyKW7dVmMRjAJfj_hFSKhDd08ZD7hrxMvAPKU49rA_PMU5X6IJAF_nwh7zhtYNSVC9sEeuGQWgX0cYTi7xs3TDud2Yfzh9zKBb2w2AGrCqr1nq7EYb6GH4q9RnCLIm9GDnCmTeFURtyk-KKu3ehk_GNOuyM4I6DjRHixFfoQLQeiz0ckDR9npImsIKMLlpadPaCX5yBLsEp9exJMn3ndtryeovqwcQrXmt8bwHzS3fw.kL4SyIKuVNrl-eSF2kmBgw
+
+{
+  "content": "This is a test comment",
+  "taskId": "cm94fyo720002bc78ixjeuttz"
+}
+
+###
+
+### Create a project
+POST http://localhost:3000/api/projects
+Content-Type: application/json
+Cookie: next-auth.session-token=YOUR_TOKEN_HERE
+
+{
+  "name": "Client Portal",
+  "color": "#ff6600"
+}
+
+###
+
+### Create a label
+POST http://localhost:3000/api/labels
+Content-Type: application/json
+Cookie: next-auth.session-token=YOUR_TOKEN_HERE
+
+{
+  "name": "Bug"
+}
+
+###
+
+### Create a task relation
+POST http://localhost:3000/api/task-relations
+Content-Type: application/json
+Cookie: next-auth.session-token=YOUR_TOKEN_HERE
+
+{
+  "fromTaskId": "TASK_ID_1",
+  "toTaskId": "TASK_ID_2",
+  "type": "DEPENDS_ON",
+  "note": "Task A depends on Task B"
+}
