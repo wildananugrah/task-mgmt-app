@@ -19,3 +19,22 @@ export async function fetchTasks() {
         throw error;
     }
 }
+
+export async function fetchTaskDetail(id: string) {
+    try {
+        const response = await fetch(`/api/tasks/${id}`, {
+            method: 'GET',
+            credentials: 'include', // Ensure cookies are sent with the request.
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }); // Adjust the API endpoint as needed
+        if (!response.ok) {
+            throw new Error('Failed to fetch tasks');
+        }
+        const tasks = await response.json();
+        return tasks;
+    } catch (error: any) {
+        console.error(error);
+    }
+}

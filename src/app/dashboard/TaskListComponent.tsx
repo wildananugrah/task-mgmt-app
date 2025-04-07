@@ -1,30 +1,21 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+
 import { TaskItem } from './TaskItem';
-import { fetchTasks } from '../actions/logics/tasks';
-import { parseISO, format } from 'date-fns';
+import { format } from 'date-fns';
+import { TaskStore } from '../stores/task.store';
 
 export default function TaskListComponent() {
-    const [tasks, setTasks] = useState([]);
-
-    useEffect(() => {
-        const getTasks = async () => {
-            try {
-                const fetchedTasks = await fetchTasks();
-                setTasks(fetchedTasks);
-            } catch (error) {
-                console.error('Error fetching tasks:', error);
-            }
-        };
-
-        getTasks();
-    }, []);
-
+    const tasks = TaskStore((state) => state.tasks);
     return (
         <div>
-            {tasks.map((task: any, index: number) => (
-                <TaskItem key={index} title={task.title} date={format(parseISO(task.dueDate), 'dd MMM yyyy')} />
+            {tasks && tasks.length > 0 && tasks.map((task: any, index: number) => (
+                <TaskItem 
+                    key={index} 
+                    id={task.id}
+                    title={task.title} 
+                    date={format(task.dueDate, 'dd MMM yyyy')} 
+                />
             ))}
         </div>
     );

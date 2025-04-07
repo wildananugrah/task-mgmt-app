@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { getAuthSession } from '../lib/auth';
-import { createTask } from '../lib/tasks';
+import { createTask, getAllTasks } from '../lib/tasks';
 
 export async function createTaskAction(
     prevState: any,
@@ -34,4 +34,13 @@ export async function createTaskAction(
         return { error: 'Failed to create task' };
     }
 
+}
+
+export async function fetchAllTasks() {
+    try {
+        return getAllTasks();
+    } catch (error) {
+        console.error('Error fetching tasks:', error);
+        throw error;
+    }
 }

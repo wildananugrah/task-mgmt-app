@@ -3,14 +3,15 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "../api/auth/[...nextauth]/authOptions";
 import { redirect } from "next/navigation";
-import ClientDashboard from "./ClientDashboard";
+import ClientDashboardComponent from "./ClientDashboardComponent";
+import { fetchAllTasks } from "../actions/taskAction";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
-
+  const tasks = await fetchAllTasks();
   if (!session) {
     redirect("/");
   }
 
-  return <ClientDashboard session={session} />;
+  return <ClientDashboardComponent session={session} tasks={tasks} />;
 }

@@ -1,19 +1,25 @@
 'use client';
 
 import { Session } from "next-auth";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ModalComponent from "@/components/ModalComponent";
 import SlidedInDrawerComponent from "@/components/SlidedInDrawerComponent";
 import CreateTaskFormComponent from "./CreateTaskFormComponent";
 import DashboardLayout from "./DashboardLayout";
 import TaskListComponent from "./TaskListComponent";
+import { TaskStore } from "../stores/task.store";
+import { SlideStore } from "../stores/slider.store";
+import TaskDetailComponent from "./TaskDetailComponent";
 
-export default function ClientDashboard(props: { session: Session }) {
-  const { session } = props;
+export default function ClientDashboardComponent(props: { session: Session, tasks: any }) {
+  const { session, tasks } = props;
   const [showModal, setShowModal] = useState(false);
-  const [openRight, setOpenRight] = useState(false);
-  const [openSubRight, setOpenSubRight] = useState(false);
-
+  const openDashboardSlider = SlideStore((state) => state.openDashboardSlider);
+  const setOpenDashboardSlider = SlideStore((state) => state.setOpenDashboardSlider);
+  const setTasks = TaskStore((state) => state.setTasks);
+  useEffect(() => {
+    setTasks(tasks);
+  }, [tasks]);
   return (
     <>
       <DashboardLayout session={session}>
@@ -45,19 +51,8 @@ export default function ClientDashboard(props: { session: Session }) {
           <CreateTaskFormComponent />
         </div>
       </ModalComponent>
-      <SlidedInDrawerComponent isOpen={openRight} onClose={() => setOpenRight(false)} from="right">
-        <h2 className="text-xl font-bold mb-4">Right Drawer</h2>
-        <p>This slides in from the right!</p>
-        <button
-          onClick={() => setOpenSubRight(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded mr-2"
-        >
-          Open Right Drawer
-        </button>
-        <SlidedInDrawerComponent isOpen={openSubRight} onClose={() => setOpenSubRight(false)} width="w-full sm:w-10/12 sm:max-w-[95vw]" from="right">
-          <h2 className="text-xl font-bold mb-4">Sub Right Drawer</h2>
-          <p>This sub slides in from the right!</p>
-        </SlidedInDrawerComponent>
+      <SlidedInDrawerComponent isOpen={openDashboardSlider} onClose={() => setOpenDashboardSlider(false)} from="right">
+        <TaskDetailComponent />
       </SlidedInDrawerComponent>
     </>
   );
