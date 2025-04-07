@@ -28,10 +28,16 @@ export const getTaskById = (id: string) => {
   });
 };
 
-export const getAllTasks = () => {
-  return prisma.task.findMany({
-    orderBy: { createdAt: 'desc' },
-  });
+export const getAllTasks = async () => {
+  try {
+    const tasks = await prisma.task.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+    return tasks;
+  } catch (error) {
+    console.error('Error fetching tasks:', error);
+    throw new Error('Failed to fetch tasks.');
+  }
 };
 
 export const updateTask = (id: string, data: Prisma.TaskUpdateInput) => {
