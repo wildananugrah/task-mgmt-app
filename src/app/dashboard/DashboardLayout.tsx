@@ -11,7 +11,7 @@ export default function DashboardLayout(props: { session: Session, children: any
   return (
     <div className="h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-white flex">
       {/* Sidebar */}
-      <aside className="flex flex-col justify-between h-full w-64 bg-white dark:bg-gray-800 p-6 rounded-r-2xl shadow-md hidden md:flex">
+      <aside className="flex flex-col justify-between h-full w-64 bg-white dark:bg-gray-800 p-6 rounded-r-2xl shadow-md md:flex">
         {/* TOP PART */}
         <div>
           <div className="mb-10">
