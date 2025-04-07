@@ -2,9 +2,9 @@ version: "3.8"
 
 services:
       
-  task-mgr-net:
+  task-mgr-db:
     image: postgres:alpine
-    container_name: task-mgr-net
+    container_name: task-mgr-db
     ports:
       - "5010:5432"
     environment:
@@ -12,7 +12,7 @@ services:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASS}
     volumes:
-      - ./task-mgr-net:/var/lib/postgresql/data
+      - ./task-mgr-db:/var/lib/postgresql/data
     networks:
       app-net: {}
 
