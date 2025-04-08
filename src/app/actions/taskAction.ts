@@ -1,8 +1,9 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { getAuthSession } from '../lib/auth';
+import { authOptions, getAuthSession } from '../lib/auth';
 import { createTask, getAllTasks } from '../lib/tasks';
+import { getServerSession } from 'next-auth';
 
 export async function createTaskAction(
     prevState: any,
@@ -38,7 +39,11 @@ export async function createTaskAction(
 
 export async function fetchAllTasks() {
     try {
-        return getAllTasks();
+        const session = await getServerSession(authOptions)
+        if (!session?.user?.id) {
+            throw new Error('User not authenticated')
+        }
+        return getAllTasks(session?.user?.id);
     } catch (error) {
         console.error('Error fetching tasks:', error);
         throw error;

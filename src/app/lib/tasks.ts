@@ -28,9 +28,15 @@ export const getTaskById = (id: string) => {
   });
 };
 
-export const getAllTasks = async () => {
+export const getAllTasks = async (userId: string) => {
   try {
     const tasks = await prisma.task.findMany({
+      where: {
+        OR: [
+          { creatorId: userId },
+          { assigneeId: userId },
+        ],
+      },
       orderBy: { createdAt: 'desc' },
     });
     return tasks;
@@ -39,6 +45,7 @@ export const getAllTasks = async () => {
     throw new Error('Failed to fetch tasks.');
   }
 };
+
 
 export const updateTask = (id: string, data: Prisma.TaskUpdateInput) => {
   return prisma.task.update({

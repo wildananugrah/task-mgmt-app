@@ -38,3 +38,42 @@ export async function fetchTaskDetail(id: string) {
         console.error(error);
     }
 }
+
+export async function updateTaskDetail(id: string, data: any){
+    try {
+        const response = await fetch(`/api/tasks/${id}`, {
+            method: 'PUT',
+            credentials: 'include', // Ensure cookies are sent with the request.
+            body: JSON.stringify(data),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }); // Adjust the API endpoint as needed
+        if (!response.ok) {
+            throw new Error('Failed to updated tasks');
+        }
+        const tasks = await response.json();
+        return tasks;
+    } catch (error: any) {
+        console.error(error);
+    }
+}
+
+export async function deleteTask(id: string){
+    try {
+        const response = await fetch(`/api/tasks/${id}`, {
+            method: 'DELETE',
+            credentials: 'include', // Ensure cookies are sent with the request.
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }); // Adjust the API endpoint as needed
+        if (!response.ok) {
+            throw new Error('Failed to updated tasks');
+        }
+        const tasks = await response.json();
+        return tasks;
+    } catch (error: any) {
+        console.error(error);
+    }
+}

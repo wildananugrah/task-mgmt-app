@@ -23,7 +23,7 @@ export default function ClientDashboardComponent(props: { session: Session, task
   return (
     <>
       <DashboardLayout session={session}>
-        <h1 className="text-2xl font-semibold mb-4">Inbox</h1>
+        <h1 className="text-2xl font-semibold mb-4">Tasks</h1>
 
         <div className="mb-6">
           <input

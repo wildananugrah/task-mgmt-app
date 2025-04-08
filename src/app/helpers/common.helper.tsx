@@ -1,3 +1,5 @@
+import { differenceInCalendarDays } from "date-fns";
+
 export function capitalizeFirstWord(str: string) {
     return str.replace(/^\s*\w/, (c) => c.toUpperCase());
 }
@@ -22,7 +24,18 @@ export const getCurrentURL = () => {
     return window.location.href; // Example: "http://localhost:3000/path?query=123"
 };
 
-export function countPercentageSubTaskProgress(closedCount: any, reviewCount: any): number{
-    return parseFloat(closedCount) === 0 ? 0 : 
-    parseFloat(((parseFloat(closedCount) / (parseFloat(closedCount) + parseFloat(reviewCount))) * 100).toFixed(2));
+export function countPercentageSubTaskProgress(closedCount: any, reviewCount: any): number {
+    return parseFloat(closedCount) === 0 ? 0 :
+        parseFloat(((parseFloat(closedCount) / (parseFloat(closedCount) + parseFloat(reviewCount))) * 100).toFixed(2));
+}
+
+export function getRemainingDays(dueDate: string): string {
+    const today = new Date()
+    const due = new Date(dueDate)
+    const days = differenceInCalendarDays(due, today)
+
+    if (days < 0) return 'Overdue'
+    if (days === 0) return 'Due today'
+    if (days === 1) return 'Due tomorrow'
+    return `Due in ${days} days`
 }

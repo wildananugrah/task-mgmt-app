@@ -28,11 +28,11 @@ export default function DashboardLayout(props: { session: Session, children: any
           </div>
 
           <nav className="space-y-4">
-            <NavItem icon="💻" label="Inbox" active />
-            <NavItem icon="✅" label="My issues" />
+            <NavItem icon="💻" label="Tasks" active />
+            {/* <NavItem icon="✅" label="My issues" />
             <NavItem icon="📚" label="Views" />
             <NavItem icon="🗺️" label="Roadmaps" />
-            <NavItem icon="⭐" label="Favorites" />
+            <NavItem icon="⭐" label="Favorites" /> */}
           </nav>
         </div>
 
