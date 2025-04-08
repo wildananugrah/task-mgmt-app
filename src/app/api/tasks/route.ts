@@ -25,7 +25,7 @@ export async function GET() {
   try {
     const session = await getAuthSession();
     if (!session) throw new Error('Unauthorized');
-    const tasks = await getAllTasks();
+    const tasks = await getAllTasks(session.user.id);
     return NextResponse.json(tasks);
   } catch (error) {
     console.error('GET /api/tasks error:', error);
