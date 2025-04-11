@@ -2,11 +2,13 @@
 
 import { Session } from "next-auth";
 import Image from "next/image";
-import { NavItem } from "./NavItem";
 import { signOut } from "next-auth/react";
+import { usePathname } from "next/navigation";
+import { NavItem } from "@/components/NavItem";
 
 export default function DashboardLayout(props: { session: Session, children: any }) {
   const { session, children } = props;
+  const pathname = usePathname();
 
   return (
     <div className="h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-white flex">
@@ -28,11 +30,18 @@ export default function DashboardLayout(props: { session: Session, children: any
           </div>
 
           <nav className="space-y-4">
-            <NavItem icon="💻" label="Tasks" active />
-            {/* <NavItem icon="✅" label="My issues" />
-            <NavItem icon="📚" label="Views" />
-            <NavItem icon="🗺️" label="Roadmaps" />
-            <NavItem icon="⭐" label="Favorites" /> */}
+            <NavItem
+              icon="✅"
+              label="Tasks"
+              href="/dashboard/tasks"
+              active={pathname.startsWith("/dashboard/tasks")}
+            />
+            <NavItem
+              icon="📁"
+              label="Projects"
+              href="/dashboard/projects"
+              active={pathname.startsWith("/dashboard/projects")}
+            />
           </nav>
         </div>
 

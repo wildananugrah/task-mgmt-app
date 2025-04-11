@@ -93,6 +93,7 @@ model Project {
   id        String   @id @default(cuid())
   name      String
   color     String? // e.g., "#ff6600" to give project a visual tag
+  description String?
   createdAt DateTime @default(now())
 
   tasks   Task[]

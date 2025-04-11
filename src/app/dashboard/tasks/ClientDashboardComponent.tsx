@@ -5,14 +5,14 @@ import { useEffect, useState } from "react";
 import ModalComponent from "@/components/ModalComponent";
 import SlidedInDrawerComponent from "@/components/SlidedInDrawerComponent";
 import CreateTaskFormComponent from "./CreateTaskFormComponent";
-import DashboardLayout from "./DashboardLayout";
 import TaskListComponent from "./TaskListComponent";
-import { TaskStore } from "../stores/task.store";
-import { SlideStore } from "../stores/slider.store";
 import TaskDetailComponent from "./TaskDetailComponent";
+import { SlideStore } from "@/app/stores/slider.store";
+import { TaskStore } from "@/app/stores/task.store";
+import DashboardLayout from "@/components/DashboardLayout";
 
-export default function ClientDashboardComponent(props: { session: Session, tasks: any }) {
-  const { session, tasks } = props;
+export default function ClientDashboardComponent(props: { session: Session, tasks: any, projects: any }) {
+  const { session, tasks, projects } = props;
   const [showModal, setShowModal] = useState(false);
   const openDashboardSlider = SlideStore((state) => state.openDashboardSlider);
   const setOpenDashboardSlider = SlideStore((state) => state.setOpenDashboardSlider);
@@ -48,7 +48,7 @@ export default function ClientDashboardComponent(props: { session: Session, task
       </DashboardLayout>
       <ModalComponent isOpen={showModal} onClose={() => setShowModal(false)}>
         <div className="bg-white dark:bg-gray-900 p-6 rounded-xl">
-          <CreateTaskFormComponent />
+          <CreateTaskFormComponent projects={projects} />
         </div>
       </ModalComponent>
       <SlidedInDrawerComponent isOpen={openDashboardSlider} onClose={() => setOpenDashboardSlider(false)} from="right">

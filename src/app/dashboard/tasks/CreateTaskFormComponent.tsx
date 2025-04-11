@@ -2,21 +2,24 @@
 
 import { useNotification } from '@/components/NotificationProviderComponent';
 import { useForm } from 'react-hook-form';
-import { createTaskAction } from '../actions/taskAction';
 import { useActionState, useEffect } from 'react';
+import { createTaskAction } from '@/app/actions/taskAction';
+import { ProjectStore } from '@/app/stores/project.store';
 
 type TaskFormValues = {
   title: string;
   description?: string;
   priority: 'LOW' | 'MEDIUM' | 'HIGH';
   dueDate?: string;
+  projectId: string;
 };
 
-export default function CreateTaskFormComponent() {
+export default function CreateTaskFormComponent(props: { projects: any }) {
   const { notify } = useNotification();
-
+  const { projects } = props;
   const initialState = null;
   const [state, formAction] = useActionState(createTaskAction, initialState);
+  const setProjects = ProjectStore((state) => state.setProjects);
 
   // Show toast when result updates
   useEffect(() => {
@@ -27,6 +30,10 @@ export default function CreateTaskFormComponent() {
     }
   }, [state, notify]);
 
+  useEffect(() => {
+    setProjects(projects);
+  }, [projects])
+
   const {
     register,
     formState: { errors },
@@ -35,6 +42,7 @@ export default function CreateTaskFormComponent() {
       title: '',
       description: '',
       priority: 'MEDIUM',
+      projectId: ''
     },
   });
   return (
@@ -74,6 +82,17 @@ export default function CreateTaskFormComponent() {
           <option value="LOW">LOW</option>
           <option value="MEDIUM">MEDIUM</option>
           <option value="HIGH">HIGH</option>
+        </select>
+      </div>
+
+      {/* Projects */}
+      <div>
+        <label className="block font-medium text-gray-800 dark:text-gray-100">Projects</label>
+        <select
+          {...register('projectId')}
+          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          {projects.map((project: any, index: number) => <option key={index} value={project.id}>{project.name}</option>)}
         </select>
       </div>
 

@@ -12,8 +12,16 @@ export const getProjectById = (id: string) => {
   });
 };
 
-export const getAllProjects = () => {
-  return prisma.project.findMany({ include: { tasks: true } });
+export const getAllProjects = (userId: string) => {
+  return prisma.project.findMany({
+    where: {
+      OR: [
+        { ownerId: userId },
+      ],
+    },
+    orderBy: { createdAt: 'desc' },
+    include: { tasks: true }
+  });
 };
 
 export const updateProject = (id: string, data: Prisma.ProjectUpdateInput) => {

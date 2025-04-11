@@ -1,6 +1,7 @@
-import { fetchTaskDetail } from "../actions/logics/tasks";
-import { SlideStore } from "../stores/slider.store";
-import { TaskStore } from "../stores/task.store";
+import { fetchTaskDetail } from "@/app/actions/logics/tasks";
+import { SlideStore } from "@/app/stores/slider.store";
+import { TaskStore } from "@/app/stores/task.store";
+
 
 interface TaskItemProps {
   title: string;

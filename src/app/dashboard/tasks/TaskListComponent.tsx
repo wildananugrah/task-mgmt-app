@@ -1,9 +1,10 @@
 'use client';
 
 
+import { TaskStore } from '@/app/stores/task.store';
 import { TaskItem } from './TaskItem';
 import { format } from 'date-fns';
-import { TaskStore } from '../stores/task.store';
+
 
 export default function TaskListComponent() {
     const tasks = TaskStore((state) => state.tasks);

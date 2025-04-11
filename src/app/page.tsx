@@ -12,7 +12,7 @@ export default function Home() {
         </h1>
         <div className="space-y-4">
           <button
-            onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
+            onClick={() => signIn("google", { callbackUrl: "/dashboard/tasks" })}
             className="px-4 py-2 bg-blue-500 text-white rounded"
           >
             Sign in with Google

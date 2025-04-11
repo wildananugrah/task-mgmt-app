@@ -1,20 +1,19 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { SlideStore } from '../stores/slider.store'
-import { TaskStore } from '../stores/task.store'
-import { capitalizeFirstWord, getRemainingDays } from '../helpers/common.helper'
-import { deleteTask, updateTaskDetail } from '../actions/logics/tasks'
 import { useNotification } from '@/components/NotificationProviderComponent'
 import { formatDate } from 'date-fns'
 import ModalComponent from '@/components/ModalComponent'
+import { SlideStore } from '@/app/stores/slider.store'
+import { TaskStore } from '@/app/stores/task.store'
+import { capitalizeFirstWord, getRemainingDays } from '@/app/helpers/common.helper'
+import { updateTaskDetail } from '@/app/actions/logics/tasks'
+import DeleteTaskConfirmationComponent from './DeleteTaskConfirmationComponent'
 
 export default function TaskDetailComponent() {
     const openDashboardSlider = SlideStore((state) => state.openDashboardSlider)
     const setOpenDashboardSlider = SlideStore((state) => state.setOpenDashboardSlider)
-    const currentTask = TaskStore((state) => state.currentTask)
-    const tasks = TaskStore((state) => state.tasks);
-    const setTasks = TaskStore((state) => state.setTasks);
+    const currentTask = TaskStore((state) => state.currentTask);
     const { notify } = useNotification();
 
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
@@ -24,7 +23,8 @@ export default function TaskDetailComponent() {
         description: '',
         dueDate: '',
         priority: '',
-        status: ''
+        status: '',
+        projectName: ''
     })
 
     const [editingField, setEditingField] = useState<string | null>(null);
@@ -36,7 +36,8 @@ export default function TaskDetailComponent() {
                 description: currentTask.description,
                 dueDate: currentTask.dueDate.slice(0, 10), // for input type="date"
                 priority: currentTask.priority || 'normal',
-                status: currentTask.status
+                status: currentTask.status,
+                projectName: currentTask.project?.name || ''
             })
         }
     }, [currentTask])
@@ -56,21 +57,27 @@ export default function TaskDetailComponent() {
 
             <div className="mb-2">
                 {editingField === 'title' ? (
-                    <input
-                        name="title"
-                        value={taskData.title}
-                        onChange={handleChange}
-                        onBlur={() => setEditingField(null)}
-                        autoFocus
-                        className="text-4xl font-bold text-gray-900 w-full border-b border-gray-300 bg-transparent focus:outline-none focus:border-blue-600"
-                    />
+                    <div className='flex flex-col space-y-2'>
+                        <input
+                            name="title"
+                            value={taskData.title}
+                            onChange={handleChange}
+                            onBlur={() => setEditingField(null)}
+                            autoFocus
+                            className="text-4xl font-bold text-gray-900 w-full border-b border-gray-300 bg-transparent focus:outline-none focus:border-blue-600"
+                        />
+                        <p className='text-gray-500'>{taskData.projectName}</p>
+                    </div>
                 ) : (
-                    <h1
-                        className="text-4xl font-bold text-gray-900 cursor-pointer"
-                        onClick={() => setEditingField('title')}
-                    >
-                        {taskData.title}
-                    </h1>
+                    <div className='flex flex-col space-y-2'>
+                        <h1
+                            className="text-4xl font-bold text-gray-900 cursor-pointer"
+                            onClick={() => setEditingField('title')}
+                        >
+                            {taskData.title}
+                        </h1>
+                        <p className='text-gray-500'>{taskData.projectName}</p>
+                    </div>
                 )}
             </div>
 
@@ -100,7 +107,10 @@ export default function TaskDetailComponent() {
 
             <section className="mb-6">
                 <h2 className="font-semibold text-lg mb-1 text-black">Subtasks (0)</h2>
-                <div className="text-gray-400">No subtasks yet.</div>
+                <div className="text-gray-400">No subtasks yet. <span className='hover:underline cursor-pointer text-gray-400' onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }}> Create a sub task ?</span></div>
             </section>
 
             <section className="mb-6">
@@ -208,35 +218,12 @@ export default function TaskDetailComponent() {
                 </button>
             </div>
             <ModalComponent isOpen={showDeleteConfirm} onClose={() => setShowDeleteConfirm(false)}>
-                <div className="flex flex-col space-y-2">
-                    <p className='text-gray-600'>Are you sure you want to delete this task ?</p>
-                    <div className='flex flex-row space-x-4'>
-                        <button
-                            onClick={() => setShowDeleteConfirm(!showDeleteConfirm)}
-                            className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            onClick={async () => {
-                                taskData.dueDate = new Date(taskData.dueDate).toISOString();
-                                try {
-                                    await deleteTask(currentTask.id);
-                                    notify('Task deleted successfully!', { type: 'success' });
-                                    setShowDeleteConfirm(!showDeleteConfirm);
-                                    setOpenDashboardSlider(!openDashboardSlider);
-                                    setTasks(tasks.filter((task: any, index: number) => task.id !== currentTask.id));
-                                } catch (error: any) {
-                                    console.error(error);
-                                    notify('Task deleted action error!', { type: 'error' });
-                                }
-                            }}
-                            className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
-                        >
-                            Confirm
-                        </button>
-                    </div>
-                </div>
+                <DeleteTaskConfirmationComponent 
+                    setShowDeleteConfirm={setShowDeleteConfirm} 
+                    showDeleteConfirm={showDeleteConfirm} 
+                    taskData={taskData}
+                    setTaskData={setTaskData}
+                />
             </ModalComponent>
         </main>
     )

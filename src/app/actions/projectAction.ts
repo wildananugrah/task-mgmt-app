@@ -2,10 +2,10 @@
 
 import { revalidatePath } from 'next/cache';
 import { authOptions, getAuthSession } from '../lib/auth';
-import { createTask, getAllTasks } from '../lib/tasks';
 import { getServerSession } from 'next-auth';
+import { createProject, getAllProjects } from '../lib/projects';
 
-export async function createTaskAction(
+export async function createProjectAction(
     prevState: any,
     formData: FormData
 ): Promise<{ error?: string; success?: boolean }> {
@@ -14,26 +14,18 @@ export async function createTaskAction(
         throw new Error('Unauthorized');
     }
 
-    const title = formData.get('title') as string;
+    const name = formData.get('title') as string;
     const description = formData.get('description') as string;
-    const priority = formData.get('priority') as 'LOW' | 'MEDIUM' | 'HIGH';
-    const dueDate = formData.get('dueDate') as string;
-    const projectId = formData.get('projectId') as string;
 
     try {
-        await createTask({
-            title,
+        await createProject({
             description,
-            priority,
-            dueDate: dueDate ? new Date(dueDate) : undefined,
-            creator: {
+            name,
+            owner: {
                 connect: { id: session?.user?.id },
             },
-            project: {
-                connect: { id: projectId } 
-            }
         });
-        revalidatePath('/dashboard/tasks');
+        revalidatePath('/dashboard/projects');
         return { success: true };
     } catch (err: any) {
         return { error: 'Failed to create task' };
@@ -41,15 +33,15 @@ export async function createTaskAction(
 
 }
 
-export async function fetchAllTasks() {
+export async function fetchAllprojects() {
     try {
         const session = await getServerSession(authOptions)
         if (!session?.user?.id) {
             throw new Error('User not authenticated')
         }
-        return getAllTasks(session?.user?.id);
+        return getAllProjects(session?.user?.id);
     } catch (error) {
-        console.error('Error fetching tasks:', error);
+        console.error('Error fetching projects:', error);
         throw error;
     }
 }
