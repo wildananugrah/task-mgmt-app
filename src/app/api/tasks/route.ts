@@ -9,13 +9,9 @@ export async function POST(req: Request) {
   try {
     const session = await getAuthSession();
     if (!session) throw new Error('Unauthorized');
-    // "creator": { "connect": { "id": "USER_ID_HERE" } }
-    body.creator = {
-      connect: { id: session?.user?.id }
-    }
-    const task = await createTask(body);
+    const task = await createTask(body, session.user.id);
     return NextResponse.json(task, { status: 201 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('POST /api/tasks error:', error);
     return NextResponse.json({ error: 'Failed to create task' }, { status: 500 });
   }

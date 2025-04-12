@@ -1,7 +1,28 @@
 import { Prisma } from '@prisma/client';
 import { prisma } from './prisma';
 
-export const createTask = (data: Prisma.TaskCreateInput) => {
+export const createTask = (body: any, userId: string) => {
+  let data: Prisma.TaskCreateInput = {
+    title: body.title,
+    description: body.description,
+    status: body.status,
+    priority: body.priority,
+    dueDate: new Date(body.dueDate).toISOString(),
+    creator: {
+      connect: {
+        id: userId
+      }
+    },
+    project: {
+      connect: {
+        id: body.projectId
+      }
+    },
+  };
+  if (body.taskId !== null)
+    data.parentTask = {
+      connect: { id: body.taskId }
+    }
   return prisma.task.create({ data });
 };
 
@@ -32,10 +53,11 @@ export const getAllTasks = async (userId: string) => {
   try {
     const tasks = await prisma.task.findMany({
       where: {
+        parentTaskId: null, // Only parent tasks
         OR: [
           { creatorId: userId },
           { assigneeId: userId },
-        ],
+        ]
       },
       orderBy: { createdAt: 'desc' },
     });

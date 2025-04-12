@@ -1,75 +1,78 @@
 'use client';
 
 import { useNotification } from '@/components/NotificationProviderComponent';
-import { useForm } from 'react-hook-form';
-import { useActionState, useEffect } from 'react';
-import { createTaskAction } from '@/app/actions/taskAction';
+import { useEffect, useState } from 'react';
 import { ProjectStore } from '@/app/stores/project.store';
+import { createTask, fetchLevelOneSubtask } from '@/app/actions/logics/tasks';
+import { TaskStore } from '@/app/stores/task.store';
 
-type TaskFormValues = {
-  title: string;
-  description?: string;
-  priority: 'LOW' | 'MEDIUM' | 'HIGH';
-  dueDate?: string;
-  projectId: string;
-  taskId?: string | null;
-};
-
-export default function CreateTaskFormComponent(props: { taskId?: string }) {
+export default function CreateTaskFormComponent(props: {
+  taskId?: string,
+  subTasks?: any,
+  setSubTasks?: any
+}) {
   const { notify } = useNotification();
   const projects = ProjectStore((state) => state.projects);
-  const initialState = null;
-  const [state, formAction] = useActionState(createTaskAction, initialState);
   const setProjects = ProjectStore((state) => state.setProjects);
-  const { taskId = null } = props;
-
-  // Show toast when result updates
-  useEffect(() => {
-    if (state?.error) {
-      notify(state.error, { type: 'error' });
-    } else if (state?.success) {
-      notify('Task created successfully!', { type: 'success' });
-    }
-  }, [state, notify]);
+  const setTasks = TaskStore((state) => state.setTasks);
+  const tasks = TaskStore((state) => state.tasks);
+  const { taskId = null, subTasks = null, setSubTasks = null } = props;
 
   useEffect(() => {
     setProjects(projects);
   }, [projects])
 
-  const {
-    register,
-    formState: { errors },
-  } = useForm<TaskFormValues>({
-    defaultValues: {
-      title: '',
-      description: '',
-      priority: 'MEDIUM',
-      projectId: '',
-      taskId: taskId 
-    },
+  const [taskData, setTaskData] = useState({
+    title: '',
+    description: '',
+    priority: 'MEDIUM',
+    projectId: '',
+    taskId: taskId
   });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target
+    setTaskData((prev) => ({
+      ...prev,
+      [name]: value
+    }))
+  }
+
   return (
     <form
-      action={formAction}
+      onSubmit={async (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        try {
+          const response = await createTask(taskData);
+          setTasks([response, ...tasks]);
+          if (taskId !== null) {
+            const levelOneTask = await fetchLevelOneSubtask(taskId);
+            setSubTasks(levelOneTask);
+          }
+          notify("Task created successfully", { type: "success" });
+        } catch (error: any) {
+          notify("Task failed to create", { type: "error" });
+        }
+      }}
       className="space-y-4 text-gray-900 dark:text-white transition-colors duration-200"
     >
       {/* Title */}
       <div>
         <label className="block font-medium text-gray-800 dark:text-gray-100">Title</label>
         <input
-          {...register('title', { required: 'Title is required' })}
+          name='title'
+          onChange={handleChange}
           className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
-        {errors.title && (
-          <p className="text-sm text-red-600 dark:text-red-400 mt-1">{errors.title.message}</p>
-        )}
       </div>
 
       {/* Description */}
       <div>
         <label className="block font-medium text-gray-800 dark:text-gray-100">Description</label>
         <textarea
-          {...register('description')}
+          name='description'
+          onChange={handleChange}
           rows={3}
           className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
@@ -79,7 +82,8 @@ export default function CreateTaskFormComponent(props: { taskId?: string }) {
       <div>
         <label className="block font-medium text-gray-800 dark:text-gray-100">Priority</label>
         <select
-          {...register('priority')}
+          name='priority'
+          onChange={handleChange}
           className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="LOW">LOW</option>
@@ -92,9 +96,11 @@ export default function CreateTaskFormComponent(props: { taskId?: string }) {
       <div>
         <label className="block font-medium text-gray-800 dark:text-gray-100">Projects</label>
         <select
-          {...register('projectId')}
+          name='projectId'
+          onChange={handleChange}
           className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
+          <option value=''>-- choose projects --</option>
           {projects.map((project: any, index: number) => <option key={index} value={project.id}>{project.name}</option>)}
         </select>
       </div>
@@ -103,17 +109,9 @@ export default function CreateTaskFormComponent(props: { taskId?: string }) {
       <div>
         <label className="block font-medium text-gray-800 dark:text-gray-100">Due Date</label>
         <input
+          name='dueDate'
           type="date"
-          {...register('dueDate')}
-          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-      </div>
-
-      {/* TaskId */}
-      <div>
-        <input
-          type="hidden"
-          {...register('taskId')}
+          onChange={handleChange}
           className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>

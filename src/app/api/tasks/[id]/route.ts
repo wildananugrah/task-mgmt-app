@@ -27,7 +27,7 @@ export async function PUT(req: NextRequest, context: any) {
   try {
     const session = await getAuthSession();
     if (!session) throw new Error('Unauthorized');
-
+    delete data.projectName;
     const task = await updateTask(id, data);
     return NextResponse.json(task);
   } catch (error) {

@@ -24,6 +24,9 @@ export default function TaskDetailComponent() {
     const [showCreateSubTaskForm, setShowCreateSubTaskForm] = useState(false);
     const [breadcrumbData, setBreadcrumbData] = useState([]);
     const [subtasks, setSubtasks] = useState([]);
+    const [assigneeQuery, setAssigneeQuery] = useState('');
+    const [assigneeResults, setAssigneeResults] = useState<any[]>([]);
+
     const handleBreadcrumbClick = async (taskId: string) => {
         setLoading(true);
         const taskDetail = await fetchTaskDetail(taskId);
@@ -37,7 +40,7 @@ export default function TaskDetailComponent() {
         priority: '',
         status: '',
         projectName: ''
-    })
+    });
 
     const [editingField, setEditingField] = useState<string | null>(null);
     const loadTaskParentChain = async () => {
@@ -71,9 +74,27 @@ export default function TaskDetailComponent() {
         loadLeveloneTask();
     }, [currentTask])
 
+    useEffect(() => {
+        const delayDebounce = setTimeout(() => {
+            const fetchUsers = async () => {
+                if (assigneeQuery.trim() === '') return;
+                try {
+                    const res = await fetch(`/api/users/search?q=${encodeURIComponent(assigneeQuery)}`);
+                    const data = await res.json();
+                    setAssigneeResults(data);
+                } catch (error) {
+                    console.error('Error fetching users:', error);
+                }
+            };
+            fetchUsers();
+        }, 300);
+
+        return () => clearTimeout(delayDebounce);
+    }, [assigneeQuery]);
+
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target
-        console.log(value);
         setTaskData((prev) => ({
             ...prev,
             [name]: value
@@ -148,11 +169,12 @@ export default function TaskDetailComponent() {
                 <h2 className="font-semibold text-lg mb-1 text-black">Subtasks ({subtasks.length})</h2>
                 {
                     subtasks.length === 0 ?
-                        <div className="text-gray-400">No subtasks yet. <span className='hover:underline cursor-pointer text-gray-400' onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setShowCreateSubTaskForm(!showCreateSubTaskForm);
-                        }}> Create a sub task ?</span>
+                        <div className="text-gray-400">No subtasks yet.
+                            <span className='hover:underline cursor-pointer text-gray-400' onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setShowCreateSubTaskForm(!showCreateSubTaskForm);
+                            }}> Create a sub task ?</span>
                         </div>
                         :
                         <ul className='text-gray-600 flex flex-col space-y-2 pl-2'>
@@ -168,6 +190,13 @@ export default function TaskDetailComponent() {
                                     setLoading(false);
                                 }}
                             >{subtask.title}</li>)}
+                            <li>
+                                <span className='hover:underline cursor-pointer text-gray-400' onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setShowCreateSubTaskForm(!showCreateSubTaskForm);
+                                }}> Create a sub task ?</span>
+                            </li>
                         </ul>
                 }
             </section>
@@ -244,8 +273,49 @@ export default function TaskDetailComponent() {
                             </p>
                         )}
                     </div>
+                    <div>
+                        <p className="text-sm text-gray-500">Assignee</p>
+                        {editingField === 'assignee' ? (
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    placeholder="Type name..."
+                                    value={assigneeQuery}
+                                    onChange={(e) => setAssigneeQuery(e.target.value)}
+                                    autoFocus
+                                    className="text-gray-900 border border-gray-300 rounded-lg p-2 w-full"
+                                />
+                                {assigneeResults.length > 0 && (
+                                    <ul className="absolute z-10 bg-white border rounded-md shadow-md max-h-40 overflow-y-auto w-full">
+                                        {assigneeResults.map((user) => (
+                                            <li
+                                                key={user.id}
+                                                onClick={() => {
+                                                    setTaskData((prev) => ({ ...prev, assigneeId: user.id }));
+                                                    setAssigneeQuery(user.name || '');
+                                                    setAssigneeResults([]);
+                                                    setEditingField(null);
+                                                }}
+                                                className="px-3 py-2 text-gray-500 hover:bg-gray-100 cursor-pointer"
+                                            >
+                                                {user.name} ({user.email})
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
+                            </div>
+                        ) : (
+                            <p
+                                className="text-gray-900 cursor-pointer"
+                                onClick={() => setEditingField('assignee')}
+                            >
+                                {assigneeQuery || currentTask.assignee?.name || 'Click to assign'}
+                            </p>
+                        )}
+                    </div>
                 </div>
             </section>
+
 
             <div className="flex justify-end space-x-4">
                 <button
@@ -261,10 +331,9 @@ export default function TaskDetailComponent() {
                     Delete
                 </button>
                 <button
-                    onClick={async () => {
+                    onClick={async (e: any) => {
                         taskData.dueDate = new Date(taskData.dueDate).toISOString();
                         try {
-                            delete taskData.projectName;
                             await updateTaskDetail(currentTask.id, taskData);
                             notify('Task updated successfully!', { type: 'success' });
                         } catch (error: any) {
@@ -287,7 +356,7 @@ export default function TaskDetailComponent() {
             </ModalComponent>
             <ModalComponent isOpen={showCreateSubTaskForm} onClose={() => setShowCreateSubTaskForm(false)}>
                 <div className="bg-white dark:bg-gray-900 p-6 rounded-xl">
-                    <CreateTaskFormComponent taskId={currentTask.id} />
+                    <CreateTaskFormComponent taskId={currentTask.id} subTasks={subtasks} setSubTasks={setSubtasks} />
                 </div>
             </ModalComponent>
         </main>

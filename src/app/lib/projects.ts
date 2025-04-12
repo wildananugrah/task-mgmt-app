@@ -1,7 +1,14 @@
 import { Prisma } from '@prisma/client';
 import { prisma } from './prisma';
 
-export const createProject = (data: Prisma.ProjectCreateInput) => {
+export const createProject = (body: any, userId: string) => {
+  let data: Prisma.ProjectCreateInput = {
+    description: body.description,
+    name: body.title,
+    owner: {
+      connect: { id: userId },
+    },
+  }
   return prisma.project.create({ data });
 };
 

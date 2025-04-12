@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthSession } from '@/app/lib/auth';
-import { deleteProject, getProjectById, updateProject } from '@/app/lib/projects';
+import { createProject, deleteProject, getProjectById, updateProject } from '@/app/lib/projects';
 
 // context must NOT be explicitly typed with a custom type/interface
 export async function GET(req: NextRequest, context: any) {

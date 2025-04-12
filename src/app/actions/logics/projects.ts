@@ -1,5 +1,25 @@
 'use client';
 
+export async function createProject(data: any) {
+    try {
+        const response = await fetch(`/api/projects`, {
+            method: 'POST',
+            credentials: 'include', // Ensure cookies are sent with the request.
+            body: JSON.stringify(data),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }); // Adjust the API endpoint as needed
+        if (!response.ok) {
+            throw new Error('Failed to fetch project');
+        }
+        const tasks = await response.json();
+        return tasks;
+    } catch (error: any) {
+        console.error(error);
+    }
+}
+
 export async function fetchProjectDetail(id: string) {
     try {
         const response = await fetch(`/api/projects/${id}`, {
