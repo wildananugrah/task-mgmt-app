@@ -120,26 +120,42 @@ export async function getLevelOneSubTasks(parentTaskId: string) {
 
 export const searchTasksFullText = async (userId: string, keyword: string) => {
   try {
-    const tasks = await prisma.task.findMany({
-      where: {
-        parentTaskId: null,
-        AND: [
-          {
-            OR: [
-              { creatorId: userId },
-              { assigneeId: userId },
-            ],
-          },
-          {
-            OR: [
-              { title: { contains: keyword, mode: 'insensitive' } },
-              { description: { contains: keyword, mode: 'insensitive' } },
-            ],
-          }
-        ],
-      }
-    });
-    return tasks;
+    return await prisma.$queryRaw`
+    SELECT *,
+      ts_rank(
+        to_tsvector('english', coalesce(title, '') || ' ' || coalesce(description, '')),
+        plainto_tsquery('english', ${keyword})
+      ) AS rank
+    FROM "Task"
+    WHERE 
+     "Task"."parentTaskId" is null and 
+      (
+        to_tsvector('english', coalesce(title, '') || ' ' || coalesce(description, '')) @@ plainto_tsquery('english', ${keyword})
+        OR title ILIKE '%' || ${keyword} || '%'
+        OR description ILIKE '%' || ${keyword} || '%'
+      )
+    ORDER BY rank DESC NULLS LAST;
+  `;
+    // const tasks = await prisma.task.findMany({
+    //   where: {
+    //     parentTaskId: null,
+    //     AND: [
+    //       {
+    //         OR: [
+    //           { creatorId: userId },
+    //           { assigneeId: userId },
+    //         ],
+    //       },
+    //       {
+    //         OR: [
+    //           { title: { contains: keyword, mode: 'insensitive' } },
+    //           { description: { contains: keyword, mode: 'insensitive' } },
+    //         ],
+    //       }
+    //     ],
+    //   }
+    // });
+    // return tasks;
   } catch (error) {
     console.error('Error searching tasks:', error);
     throw new Error('Failed to search tasks.');
