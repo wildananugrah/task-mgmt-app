@@ -46,6 +46,12 @@ export const getAllTasks = async (userId: string) => {
   }
 };
 
+export async function getSubTasks(taskId: string) {
+  return await prisma.task.findMany({
+    where: { parentTaskId: taskId },
+    orderBy: { createdAt: 'asc' }
+  });
+}
 
 export const updateTask = (id: string, data: Prisma.TaskUpdateInput) => {
   return prisma.task.update({
@@ -59,3 +65,34 @@ export const deleteTask = (id: string) => {
     where: { id },
   });
 };
+
+export async function getTaskParentChain(taskId: string) {
+  const result = await prisma.$queryRaw`
+  WITH RECURSIVE parent_chain AS (
+    SELECT id, title, "parentTaskId"
+    FROM "Task"
+    WHERE id = ${taskId}
+
+    UNION ALL
+
+    SELECT t.id, t.title, t."parentTaskId"
+    FROM "Task" t
+    INNER JOIN parent_chain pc ON t.id = pc."parentTaskId"
+  )
+  SELECT * FROM parent_chain;
+`
+
+  return result;
+}
+
+export async function getLevelOneSubTasks(parentTaskId: string) {
+  return await prisma.task.findMany({
+    where: {
+      parentTaskId: parentTaskId,
+    },
+    orderBy: {
+      createdAt: 'asc', // optional: sort subtasks
+    },
+  });
+}
+

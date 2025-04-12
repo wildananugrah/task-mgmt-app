@@ -7,17 +7,29 @@ import ModalComponent from '@/components/ModalComponent'
 import { SlideStore } from '@/app/stores/slider.store'
 import { TaskStore } from '@/app/stores/task.store'
 import { capitalizeFirstWord, getRemainingDays } from '@/app/helpers/common.helper'
-import { updateTaskDetail } from '@/app/actions/logics/tasks'
+import { fetchLevelOneSubtask, fetchParentChainTask, fetchTaskDetail, updateTaskDetail } from '@/app/actions/logics/tasks'
 import DeleteTaskConfirmationComponent from './DeleteTaskConfirmationComponent'
+import CreateTaskFormComponent from './CreateTaskFormComponent'
+import BreadcrumbComponent from '@/components/BreadcrumbComponent'
 
 export default function TaskDetailComponent() {
     const openDashboardSlider = SlideStore((state) => state.openDashboardSlider)
     const setOpenDashboardSlider = SlideStore((state) => state.setOpenDashboardSlider)
     const currentTask = TaskStore((state) => state.currentTask);
+    const setCurrentTask = TaskStore((state) => state.setCurrentTask);
     const { notify } = useNotification();
+    const [isLoading, setLoading] = useState(false);
 
-    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
-
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [showCreateSubTaskForm, setShowCreateSubTaskForm] = useState(false);
+    const [breadcrumbData, setBreadcrumbData] = useState([]);
+    const [subtasks, setSubtasks] = useState([]);
+    const handleBreadcrumbClick = async (taskId: string) => {
+        setLoading(true);
+        const taskDetail = await fetchTaskDetail(taskId);
+        setCurrentTask(taskDetail);
+        setLoading(false);
+    };
     const [taskData, setTaskData] = useState({
         title: '',
         description: '',
@@ -28,22 +40,40 @@ export default function TaskDetailComponent() {
     })
 
     const [editingField, setEditingField] = useState<string | null>(null);
-
+    const loadTaskParentChain = async () => {
+        try {
+            const parentChainTask = await fetchParentChainTask(currentTask.id);
+            setBreadcrumbData(parentChainTask);
+        } catch (error: any) {
+            console.error(error);
+        }
+    }
+    const loadLeveloneTask = async () => {
+        try {
+            const levelOneTask = await fetchLevelOneSubtask(currentTask.id);
+            setSubtasks(levelOneTask);
+        } catch (error: any) {
+            console.error(error);
+        }
+    }
     useEffect(() => {
         if (currentTask) {
             setTaskData({
                 title: currentTask.title,
                 description: currentTask.description,
-                dueDate: currentTask.dueDate.slice(0, 10), // for input type="date"
+                dueDate: currentTask.dueDate && currentTask.dueDate.slice(0, 10), // for input type="date"
                 priority: currentTask.priority || 'normal',
                 status: currentTask.status,
                 projectName: currentTask.project?.name || ''
             })
         }
+        loadTaskParentChain();
+        loadLeveloneTask();
     }, [currentTask])
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target
+        console.log(value);
         setTaskData((prev) => ({
             ...prev,
             [name]: value
@@ -54,7 +84,16 @@ export default function TaskDetailComponent() {
 
     return (
         <main className="max-w-4xl mx-auto px-4 py-10">
-
+            {breadcrumbData.length > 0 &&
+                <div className='my-2'>
+                    <BreadcrumbComponent tasks={breadcrumbData} onClick={handleBreadcrumbClick} />
+                </div>
+            }
+            {
+                isLoading && <div className='my-2'>
+                    Loading...
+                </div>
+            }
             <div className="mb-2">
                 {editingField === 'title' ? (
                     <div className='flex flex-col space-y-2'>
@@ -106,11 +145,31 @@ export default function TaskDetailComponent() {
             </section>
 
             <section className="mb-6">
-                <h2 className="font-semibold text-lg mb-1 text-black">Subtasks (0)</h2>
-                <div className="text-gray-400">No subtasks yet. <span className='hover:underline cursor-pointer text-gray-400' onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                }}> Create a sub task ?</span></div>
+                <h2 className="font-semibold text-lg mb-1 text-black">Subtasks ({subtasks.length})</h2>
+                {
+                    subtasks.length === 0 ?
+                        <div className="text-gray-400">No subtasks yet. <span className='hover:underline cursor-pointer text-gray-400' onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setShowCreateSubTaskForm(!showCreateSubTaskForm);
+                        }}> Create a sub task ?</span>
+                        </div>
+                        :
+                        <ul className='text-gray-600 flex flex-col space-y-2 pl-2'>
+                            {subtasks.map((subtask: any, index: number) => <li
+                                key={index}
+                                className='hover:underline cursor-pointer'
+                                onClick={async (e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setLoading(true);
+                                    const taskDetail = await fetchTaskDetail(subtask.id);
+                                    setCurrentTask(taskDetail);
+                                    setLoading(false);
+                                }}
+                            >{subtask.title}</li>)}
+                        </ul>
+                }
             </section>
 
             <section className="mb-6">
@@ -122,7 +181,7 @@ export default function TaskDetailComponent() {
                             <input
                                 type="date"
                                 name="dueDate"
-                                value={taskData.dueDate}
+                                value={taskData.dueDate ? taskData.dueDate : formatDate(Date.now(), "dd MMM yyyy")}
                                 onChange={handleChange}
                                 onBlur={() => setEditingField(null)}
                                 autoFocus
@@ -133,7 +192,7 @@ export default function TaskDetailComponent() {
                                 className="text-gray-900 cursor-pointer"
                                 onClick={() => setEditingField('dueDate')}
                             >
-                                {taskData.dueDate !== '' && formatDate(taskData.dueDate, "dd MMM yyyy")}
+                                {taskData.dueDate ? formatDate(taskData.dueDate, "dd MMM yyyy") : formatDate(Date.now(), "dd MMM yyyy")}
                             </p>
                         )}
                     </div>
@@ -205,6 +264,7 @@ export default function TaskDetailComponent() {
                     onClick={async () => {
                         taskData.dueDate = new Date(taskData.dueDate).toISOString();
                         try {
+                            delete taskData.projectName;
                             await updateTaskDetail(currentTask.id, taskData);
                             notify('Task updated successfully!', { type: 'success' });
                         } catch (error: any) {
@@ -218,12 +278,17 @@ export default function TaskDetailComponent() {
                 </button>
             </div>
             <ModalComponent isOpen={showDeleteConfirm} onClose={() => setShowDeleteConfirm(false)}>
-                <DeleteTaskConfirmationComponent 
-                    setShowDeleteConfirm={setShowDeleteConfirm} 
-                    showDeleteConfirm={showDeleteConfirm} 
+                <DeleteTaskConfirmationComponent
+                    setShowDeleteConfirm={setShowDeleteConfirm}
+                    showDeleteConfirm={showDeleteConfirm}
                     taskData={taskData}
                     setTaskData={setTaskData}
                 />
+            </ModalComponent>
+            <ModalComponent isOpen={showCreateSubTaskForm} onClose={() => setShowCreateSubTaskForm(false)}>
+                <div className="bg-white dark:bg-gray-900 p-6 rounded-xl">
+                    <CreateTaskFormComponent taskId={currentTask.id} />
+                </div>
             </ModalComponent>
         </main>
     )

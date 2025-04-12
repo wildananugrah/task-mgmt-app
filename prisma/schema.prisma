@@ -84,17 +84,22 @@ model Task {
   project   Project?  @relation(fields: [projectId], references: [id])
   comments  Comment[]
 
+  // Sub-tasks
+  parentTaskId String?
+  parentTask   Task?   @relation("SubTasks", fields: [parentTaskId], references: [id])
+  subTasks     Task[]  @relation("SubTasks")
+
   @@index([creatorId])
   @@index([assigneeId])
   @@index([projectId])
 }
 
 model Project {
-  id        String   @id @default(cuid())
-  name      String
-  color     String? // e.g., "#ff6600" to give project a visual tag
+  id          String   @id @default(cuid())
+  name        String
+  color       String? // e.g., "#ff6600" to give project a visual tag
   description String?
-  createdAt DateTime @default(now())
+  createdAt   DateTime @default(now())
 
   tasks   Task[]
   ownerId String

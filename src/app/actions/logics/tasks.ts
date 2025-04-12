@@ -77,3 +77,41 @@ export async function deleteTask(id: string){
         console.error(error);
     }
 }
+
+export async function fetchParentChainTask(id: string) {
+    try {
+        const response = await fetch(`/api/tasks/${id}/parents`, {
+            method: 'GET',
+            credentials: 'include', // Ensure cookies are sent with the request.
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }); // Adjust the API endpoint as needed
+        if (!response.ok) {
+            throw new Error('Failed to updated tasks');
+        }
+        const tasks = await response.json();
+        return tasks;
+    } catch (error: any) {
+        console.error(error);
+    }
+}
+
+export async function fetchLevelOneSubtask(id: string) {
+    try {
+        const response = await fetch(`/api/tasks/${id}/levelone`, {
+            method: 'GET',
+            credentials: 'include', // Ensure cookies are sent with the request.
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }); // Adjust the API endpoint as needed
+        if (!response.ok) {
+            throw new Error('Failed to updated tasks');
+        }
+        const tasks = await response.json();
+        return tasks;
+    } catch (error: any) {
+        console.error(error);
+    }
+}

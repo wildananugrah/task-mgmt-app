@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { authOptions, getAuthSession } from '../lib/auth';
 import { createTask, getAllTasks } from '../lib/tasks';
 import { getServerSession } from 'next-auth';
+import { Prisma } from '@prisma/client';
 
 export async function createTaskAction(
     prevState: any,
@@ -19,9 +20,10 @@ export async function createTaskAction(
     const priority = formData.get('priority') as 'LOW' | 'MEDIUM' | 'HIGH';
     const dueDate = formData.get('dueDate') as string;
     const projectId = formData.get('projectId') as string;
+    const taskId = formData.get('taskId') as string;
 
     try {
-        await createTask({
+        let data: Prisma.TaskCreateInput = {
             title,
             description,
             priority,
@@ -30,9 +32,14 @@ export async function createTaskAction(
                 connect: { id: session?.user?.id },
             },
             project: {
-                connect: { id: projectId } 
+                connect: { id: projectId }
+            },
+        };
+        if (taskId !== null)
+            data.parentTask = {
+                connect: { id: taskId }
             }
-        });
+        await createTask(data);
         revalidatePath('/dashboard/tasks');
         return { success: true };
     } catch (err: any) {

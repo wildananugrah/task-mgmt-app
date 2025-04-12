@@ -10,6 +10,7 @@ import TaskDetailComponent from "./TaskDetailComponent";
 import { SlideStore } from "@/app/stores/slider.store";
 import { TaskStore } from "@/app/stores/task.store";
 import DashboardLayout from "@/components/DashboardLayout";
+import { ProjectStore } from "@/app/stores/project.store";
 
 export default function ClientDashboardComponent(props: { session: Session, tasks: any, projects: any }) {
   const { session, tasks, projects } = props;
@@ -17,8 +18,10 @@ export default function ClientDashboardComponent(props: { session: Session, task
   const openDashboardSlider = SlideStore((state) => state.openDashboardSlider);
   const setOpenDashboardSlider = SlideStore((state) => state.setOpenDashboardSlider);
   const setTasks = TaskStore((state) => state.setTasks);
+  const setProjects = ProjectStore((state) => state.setProjects);
   useEffect(() => {
     setTasks(tasks);
+    setProjects(projects);
   }, [tasks]);
   return (
     <>
@@ -48,7 +51,7 @@ export default function ClientDashboardComponent(props: { session: Session, task
       </DashboardLayout>
       <ModalComponent isOpen={showModal} onClose={() => setShowModal(false)}>
         <div className="bg-white dark:bg-gray-900 p-6 rounded-xl">
-          <CreateTaskFormComponent projects={projects} />
+          <CreateTaskFormComponent />
         </div>
       </ModalComponent>
       <SlidedInDrawerComponent isOpen={openDashboardSlider} onClose={() => setOpenDashboardSlider(false)} from="right">

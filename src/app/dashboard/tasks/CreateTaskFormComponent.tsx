@@ -12,14 +12,16 @@ type TaskFormValues = {
   priority: 'LOW' | 'MEDIUM' | 'HIGH';
   dueDate?: string;
   projectId: string;
+  taskId?: string | null;
 };
 
-export default function CreateTaskFormComponent(props: { projects: any }) {
+export default function CreateTaskFormComponent(props: { taskId?: string }) {
   const { notify } = useNotification();
-  const { projects } = props;
+  const projects = ProjectStore((state) => state.projects);
   const initialState = null;
   const [state, formAction] = useActionState(createTaskAction, initialState);
   const setProjects = ProjectStore((state) => state.setProjects);
+  const { taskId = null } = props;
 
   // Show toast when result updates
   useEffect(() => {
@@ -42,7 +44,8 @@ export default function CreateTaskFormComponent(props: { projects: any }) {
       title: '',
       description: '',
       priority: 'MEDIUM',
-      projectId: ''
+      projectId: '',
+      taskId: taskId 
     },
   });
   return (
@@ -102,6 +105,15 @@ export default function CreateTaskFormComponent(props: { projects: any }) {
         <input
           type="date"
           {...register('dueDate')}
+          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
+      {/* TaskId */}
+      <div>
+        <input
+          type="hidden"
+          {...register('taskId')}
           className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
