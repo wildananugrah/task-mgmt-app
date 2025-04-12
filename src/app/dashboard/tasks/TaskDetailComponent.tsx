@@ -11,6 +11,7 @@ import { fetchLevelOneSubtask, fetchParentChainTask, fetchTaskDetail, updateTask
 import DeleteTaskConfirmationComponent from './DeleteTaskConfirmationComponent'
 import CreateTaskFormComponent from './CreateTaskFormComponent'
 import BreadcrumbComponent from '@/components/BreadcrumbComponent'
+import RichTextEditorComponent from '@/components/RichTextEditorComponent'
 
 export default function TaskDetailComponent() {
     const openDashboardSlider = SlideStore((state) => state.openDashboardSlider)
@@ -26,6 +27,7 @@ export default function TaskDetailComponent() {
     const [subtasks, setSubtasks] = useState([]);
     const [assigneeQuery, setAssigneeQuery] = useState('');
     const [assigneeResults, setAssigneeResults] = useState<any[]>([]);
+    const [richTextValue, setRichTextValue] = useState('');
 
     const handleBreadcrumbClick = async (taskId: string) => {
         setLoading(true);
@@ -68,7 +70,8 @@ export default function TaskDetailComponent() {
                 priority: currentTask.priority || 'normal',
                 status: currentTask.status,
                 projectName: currentTask.project?.name || ''
-            })
+            });
+            setRichTextValue(currentTask.description);
         }
         loadTaskParentChain();
         loadLeveloneTask();
@@ -146,24 +149,34 @@ export default function TaskDetailComponent() {
             <section className="mb-6">
                 <h2 className="font-semibold text-lg mb-1 text-black">Description</h2>
                 {editingField === 'description' ? (
-                    <textarea
-                        name="description"
-                        value={taskData.description}
-                        onChange={handleChange}
-                        onBlur={() => setEditingField(null)}
-                        rows={4}
-                        autoFocus
-                        className="w-full border border-gray-300 rounded-lg p-2 text-gray-700"
-                    />
+                    <div className='bg-white' >
+                        <RichTextEditorComponent value={richTextValue} setValue={setRichTextValue} onBlur={() => setEditingField(null)}/>
+                    </div>
+                    // <textarea
+                    //     name="description"
+                    //     value={taskData.description}
+                    //     onChange={handleChange}
+                    //     onBlur={() => setEditingField(null)}
+                    //     rows={4}
+                    //     autoFocus
+                    //     className="w-full border border-gray-300 rounded-lg p-2 text-gray-700"
+                    // />
                 ) : (
-                    <p
-                        className="text-gray-700 cursor-pointer"
+                    <div
+                        className="prose max-w-none text-gray-600 text-sm"
                         onClick={() => setEditingField('description')}
                     >
-                        {taskData.description || 'Click to add a description...'}
-                    </p>
-                )}
-            </section>
+                        <div dangerouslySetInnerHTML={{ __html: richTextValue }} />
+                    </div>
+                    // <p
+                    //     className="text-gray-700 cursor-pointer"
+                    //     onClick={() => setEditingField('description')}
+                    // >
+                    //     {taskData.description || 'Click to add a description...'}
+                    // </p>
+                )
+                }
+            </section >
 
             <section className="mb-6">
                 <h2 className="font-semibold text-lg mb-1 text-black">Subtasks ({subtasks.length})</h2>
@@ -333,6 +346,7 @@ export default function TaskDetailComponent() {
                 <button
                     onClick={async (e: any) => {
                         taskData.dueDate = new Date(taskData.dueDate).toISOString();
+                        taskData.description = richTextValue;
                         try {
                             await updateTaskDetail(currentTask.id, taskData);
                             notify('Task updated successfully!', { type: 'success' });
@@ -359,6 +373,6 @@ export default function TaskDetailComponent() {
                     <CreateTaskFormComponent taskId={currentTask.id} subTasks={subtasks} setSubTasks={setSubtasks} />
                 </div>
             </ModalComponent>
-        </main>
+        </main >
     )
 }

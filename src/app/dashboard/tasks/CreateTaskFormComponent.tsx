@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { ProjectStore } from '@/app/stores/project.store';
 import { createTask, fetchLevelOneSubtask } from '@/app/actions/logics/tasks';
 import { TaskStore } from '@/app/stores/task.store';
+import RichTextEditorComponent from '@/components/RichTextEditorComponent';
 
 export default function CreateTaskFormComponent(props: {
   taskId?: string,
@@ -17,6 +18,7 @@ export default function CreateTaskFormComponent(props: {
   const setTasks = TaskStore((state) => state.setTasks);
   const tasks = TaskStore((state) => state.tasks);
   const { taskId = null, subTasks = null, setSubTasks = null } = props;
+  const [richTextValue, setRichTextValue] = useState('');
 
   useEffect(() => {
     setProjects(projects);
@@ -44,6 +46,7 @@ export default function CreateTaskFormComponent(props: {
         e.stopPropagation();
         e.preventDefault();
         try {
+          taskData.description = richTextValue;
           const response = await createTask(taskData);
           setTasks([response, ...tasks]);
           if (taskId !== null) {
@@ -70,12 +73,15 @@ export default function CreateTaskFormComponent(props: {
       {/* Description */}
       <div>
         <label className="block font-medium text-gray-800 dark:text-gray-100">Description</label>
-        <textarea
+        <div className='bg-white'>
+          <RichTextEditorComponent value={richTextValue} setValue={setRichTextValue} />
+        </div>
+        {/* <textarea
           name='description'
           onChange={handleChange}
           rows={3}
           className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
+        /> */}
       </div>
 
       {/* Priority */}

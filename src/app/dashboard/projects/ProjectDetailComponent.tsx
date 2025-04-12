@@ -5,9 +5,11 @@ import ModalComponent from "@/components/ModalComponent";
 import { useNotification } from "@/components/NotificationProviderComponent";
 import { useEffect, useState } from "react";
 import DeleteProjectConfirmationComponent from "./DeleteProjectConfirmationComponent";
+import RichTextEditorComponent from "@/components/RichTextEditorComponent";
 
 export default function ProjectDetailComponent() {
     const [editingField, setEditingField] = useState<string | null>(null);
+    const [richTextValue, setRichTextValue] = useState('');
     const [projectData, setProjectData] = useState({
         name: '',
         description: ''
@@ -25,13 +27,14 @@ export default function ProjectDetailComponent() {
         }))
     }
     useEffect(() => {
-            if (currentProject) {
-                setProjectData({
-                    name: currentProject.name,
-                    description: currentProject.description,
-                })
-            }
-        }, [currentProject])
+        if (currentProject) {
+            setProjectData({
+                name: currentProject.name,
+                description: currentProject.description,
+            });
+            setRichTextValue(currentProject.description);
+        }
+    }, [currentProject])
     return (
         <main className="max-w-4xl mx-auto px-4 py-10">
 
@@ -62,22 +65,31 @@ export default function ProjectDetailComponent() {
             <section className="mb-6">
                 <h2 className="font-semibold text-lg mb-1 text-black">Description</h2>
                 {editingField === 'description' ? (
-                    <textarea
-                        name="description"
-                        value={projectData.description}
-                        onChange={handleChange}
-                        onBlur={() => setEditingField(null)}
-                        rows={4}
-                        autoFocus
-                        className="w-full border border-gray-300 rounded-lg p-2 text-gray-700"
-                    />
+                    <div className='bg-white' >
+                        <RichTextEditorComponent value={richTextValue} setValue={setRichTextValue} onBlur={() => setEditingField(null)} />
+                    </div>
+                    // <textarea
+                    //     name="description"
+                    //     value={projectData.description}
+                    //     onChange={handleChange}
+                    //     onBlur={() => setEditingField(null)}
+                    //     rows={4}
+                    //     autoFocus
+                    //     className="w-full border border-gray-300 rounded-lg p-2 text-gray-700"
+                    // />
                 ) : (
-                    <p
-                        className="text-gray-700 cursor-pointer"
+                    <div
+                        className="prose max-w-none text-gray-600 text-sm"
                         onClick={() => setEditingField('description')}
                     >
-                        {projectData.description || 'Click to add a description...'}
-                    </p>
+                        <div dangerouslySetInnerHTML={{ __html: richTextValue }} />
+                    </div>
+                    // <p
+                    //     className="text-gray-700 cursor-pointer"
+                    //     onClick={() => setEditingField('description')}
+                    // >
+                    //     {richTextValue || 'Click to add a description...'}
+                    // </p>
                 )}
             </section>
 
@@ -98,6 +110,7 @@ export default function ProjectDetailComponent() {
                 <button
                     onClick={async () => {
                         try {
+                            projectData.description = richTextValue;
                             await updateProjectDetail(currentProject.id, projectData);
                             notify('Project updated successfully!', { type: 'success' });
                         } catch (error: any) {
