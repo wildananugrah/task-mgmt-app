@@ -103,7 +103,6 @@ export async function getTaskParentChain(taskId: string) {
   )
   SELECT * FROM parent_chain;
 `
-
   return result;
 }
 
