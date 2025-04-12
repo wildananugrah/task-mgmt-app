@@ -6,11 +6,6 @@ import { createProject } from '@/app/actions/logics/projects';
 import { ProjectStore } from '@/app/stores/project.store';
 import RichTextEditorComponent from '@/components/RichTextEditorComponent';
 
-type ProjectFormValues = {
-  title: string;
-  description?: string;
-};
-
 export default function CreateProjectFormComponent() {
   const { notify } = useNotification();
   const setProjects = ProjectStore((state) => state.setProjects);
@@ -61,14 +56,7 @@ export default function CreateProjectFormComponent() {
         <div className='bg-white' >
           <RichTextEditorComponent value={richTextValue} setValue={setRichTextValue} />
         </div>
-        {/* <textarea
-          name='description'
-          onChange={handleChange}
-          rows={3}
-          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-        /> */}
       </div>
-
 
       {/* Submit Button */}
       <button

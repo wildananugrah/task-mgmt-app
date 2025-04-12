@@ -152,15 +152,6 @@ export default function TaskDetailComponent() {
                     <div className='bg-white' >
                         <RichTextEditorComponent value={richTextValue} setValue={setRichTextValue} onBlur={() => setEditingField(null)}/>
                     </div>
-                    // <textarea
-                    //     name="description"
-                    //     value={taskData.description}
-                    //     onChange={handleChange}
-                    //     onBlur={() => setEditingField(null)}
-                    //     rows={4}
-                    //     autoFocus
-                    //     className="w-full border border-gray-300 rounded-lg p-2 text-gray-700"
-                    // />
                 ) : (
                     <div
                         className="prose max-w-none text-gray-600 text-sm"
@@ -168,12 +159,6 @@ export default function TaskDetailComponent() {
                     >
                         <div dangerouslySetInnerHTML={{ __html: richTextValue }} />
                     </div>
-                    // <p
-                    //     className="text-gray-700 cursor-pointer"
-                    //     onClick={() => setEditingField('description')}
-                    // >
-                    //     {taskData.description || 'Click to add a description...'}
-                    // </p>
                 )
                 }
             </section >
