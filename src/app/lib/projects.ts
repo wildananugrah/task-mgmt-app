@@ -31,6 +31,25 @@ export const getAllProjects = (userId: string) => {
   });
 };
 
+export const searchProjectsFullText = async (userId: string, keyword: string) => {
+  try {
+    return prisma.project.findMany({
+      where: {
+        ownerId: userId,
+        OR: [
+          { name: { contains: keyword, mode: 'insensitive' } },
+          { description: { contains: keyword, mode: 'insensitive' } },
+        ],
+      },
+      orderBy: { createdAt: 'desc' },
+      include: { tasks: true }
+    });
+  } catch (error) {
+    console.error('Error searching tasks:', error);
+    throw new Error('Failed to search tasks.');
+  }
+};
+
 export const updateProject = (id: string, data: Prisma.ProjectUpdateInput) => {
   return prisma.project.update({ where: { id }, data });
 };

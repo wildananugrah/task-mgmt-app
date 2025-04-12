@@ -1,7 +1,7 @@
 'use client';
 
 import { Session } from "next-auth";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ModalComponent from "@/components/ModalComponent";
 import SlidedInDrawerComponent from "@/components/SlidedInDrawerComponent";
 import CreateTaskFormComponent from "./CreateTaskFormComponent";
@@ -11,6 +11,7 @@ import { SlideStore } from "@/app/stores/slider.store";
 import { TaskStore } from "@/app/stores/task.store";
 import DashboardLayout from "@/components/DashboardLayout";
 import { ProjectStore } from "@/app/stores/project.store";
+import { fetchTasksSearch } from "@/app/actions/logics/tasks";
 
 export default function ClientDashboardComponent(props: { session: Session, tasks: any, projects: any }) {
   const { session, tasks, projects } = props;
@@ -19,6 +20,22 @@ export default function ClientDashboardComponent(props: { session: Session, task
   const setOpenDashboardSlider = SlideStore((state) => state.setOpenDashboardSlider);
   const setTasks = TaskStore((state) => state.setTasks);
   const setProjects = ProjectStore((state) => state.setProjects);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target;
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+    searchTimeoutRef.current = setTimeout(async () => {
+      if (value.trim() === '') {
+        setTasks(tasks); // Reset
+      } else {
+        const filteredTasks = await fetchTasksSearch(value);
+        setTasks(filteredTasks);
+      }
+    }, 400); // 400ms debounce
+  };
+
   useEffect(() => {
     setTasks(tasks);
     setProjects(projects);
@@ -30,6 +47,7 @@ export default function ClientDashboardComponent(props: { session: Session, task
 
         <div className="mb-6">
           <input
+            onChange={handleSearch}
             type="text"
             placeholder="Search tasks and teams"
             className="w-full px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-sm outline-none"

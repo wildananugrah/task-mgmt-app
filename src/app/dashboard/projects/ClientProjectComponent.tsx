@@ -4,12 +4,13 @@ import { ProjectStore } from "@/app/stores/project.store";
 import DashboardLayout from "@/components/DashboardLayout";
 import ModalComponent from "@/components/ModalComponent";
 import { Session } from "next-auth";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import CreateProjectFormComponent from "./CreateProjectFormComponent";
 import ProjectListComponent from "./ProjectListComponent";
 import SlidedInDrawerComponent from "@/components/SlidedInDrawerComponent";
 import { SlideStore } from "@/app/stores/slider.store";
 import ProjectDetailComponent from "./ProjectDetailComponent";
+import { fetchProjectsSearch } from "@/app/actions/logics/projects";
 
 
 export default function ClientProjectComponent(props: { session: Session, projects: any }) {
@@ -18,6 +19,21 @@ export default function ClientProjectComponent(props: { session: Session, projec
     const setProjects = ProjectStore((state) => state.setProjects);
     const openProjectSlider = SlideStore((state) => state.openProjectSlider);
     const setOpenProjectSlider = SlideStore((state) => state.setOpenProjectSlider);
+    const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { value } = e.target;
+        if (searchTimeoutRef.current) {
+            clearTimeout(searchTimeoutRef.current);
+        }
+        searchTimeoutRef.current = setTimeout(async () => {
+            if (value.trim() === '') {
+                setProjects(projects); // Reset
+            } else {
+                const filteredProjects = await fetchProjectsSearch(value);
+                setProjects(filteredProjects);
+            }
+        }, 400); // 400ms debounce
+    };
     useEffect(() => {
         setProjects(projects);
     }, [projects]);
@@ -27,6 +43,7 @@ export default function ClientProjectComponent(props: { session: Session, projec
                 <h1 className="text-2xl font-semibold mb-4">Projects</h1>
                 <div className="mb-6">
                     <input
+                        onChange={handleSearch}
                         type="text"
                         placeholder="Search projects and teams"
                         className="w-full px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-sm outline-none"

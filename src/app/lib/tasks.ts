@@ -118,3 +118,30 @@ export async function getLevelOneSubTasks(parentTaskId: string) {
   });
 }
 
+export const searchTasksFullText = async (userId: string, keyword: string) => {
+  try {
+    const tasks = await prisma.task.findMany({
+      where: {
+        parentTaskId: null,
+        AND: [
+          {
+            OR: [
+              { creatorId: userId },
+              { assigneeId: userId },
+            ],
+          },
+          {
+            OR: [
+              { title: { contains: keyword, mode: 'insensitive' } },
+              { description: { contains: keyword, mode: 'insensitive' } },
+            ],
+          }
+        ],
+      }
+    });
+    return tasks;
+  } catch (error) {
+    console.error('Error searching tasks:', error);
+    throw new Error('Failed to search tasks.');
+  }
+};
